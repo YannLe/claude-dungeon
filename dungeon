@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# dungeon         → démarre le conteneur et ouvre la carte
+# dungeon off     → arrête le conteneur (les hooks redeviennent muets)
+# dungeon status  → état
+# dungeon logs    → logs du serveur
+# dungeon reset   → efface les sessions en mémoire
+# dungeon restart → reconstruit et relance le conteneur (après une mise à jour du code)
+set -euo pipefail
+
+DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
+PORT="${CLAUDE_DUNGEON_PORT:-4242}"
+URL="http://localhost:${PORT}"
+DC=(docker compose -f "$DIR/docker-compose.yml")
+
+case "${1:-on}" in
+  on|up|"")
+    if curl -fs -m 1 "$URL/health" >/dev/null 2>&1; then
+      echo "🗺️  Déjà lancé : $URL"
+    else
+      CLAUDE_DUNGEON_PORT="$PORT" "${DC[@]}" up -d --build >/dev/null 2>&1 || { "${DC[@]}" up -d --build; exit 1; }
+      for _ in $(seq 1 30); do curl -fs -m 1 "$URL/health" >/dev/null 2>&1 && break; sleep 0.3; done
+      echo "🗺️  Donjon ouvert : $URL"
+    fi
+    [ "${NO_BROWSER:-}" = 1 ] || (xdg-open "$URL" >/dev/null 2>&1 &) || true
+    ;;
+  off|down|stop)
+    "${DC[@]}" down >/dev/null 2>&1 || true
+    echo "🌑 Donjon fermé (les hooks ne font plus rien)"
+    ;;
+  status)
+    if curl -fs -m 1 "$URL/health"; then echo; else echo "🌑 Éteint"; fi
+    ;;
+  logs)
+    "${DC[@]}" logs -f
+    ;;
+  reset)
+    curl -fs -m 2 -X POST "$URL/reset" && echo "🧹 Sessions effacées"
+    ;;
+  restart|rebuild)
+    "${DC[@]}" down >/dev/null 2>&1 || true
+    CLAUDE_DUNGEON_PORT="$PORT" "${DC[@]}" up -d --build >/dev/null 2>&1 || { "${DC[@]}" up -d --build; exit 1; }
+    for _ in $(seq 1 30); do curl -fs -m 1 "$URL/health" >/dev/null 2>&1 && break; sleep 0.3; done
+    echo "🔁 Donjon reconstruit : $URL"
+    ;;
+  *)
+    echo "Usage : dungeon [on|off|status|logs|reset|restart]"; exit 1
+    ;;
+esac

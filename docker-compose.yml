@@ -1,0 +1,17 @@
+services:
+  dungeon:
+    build: .
+    container_name: claude-dungeon
+    ports:
+      # uniquement en local, rien d'exposé sur le réseau
+      - "127.0.0.1:${CLAUDE_DUNGEON_PORT:-4242}:4242"
+    volumes:
+      # Transcripts des sessions, en lecture seule, montés au MÊME chemin
+      # que sur l'hôte pour que les chemins envoyés par les hooks marchent tels quels.
+      - ${HOME}/.claude/projects:${HOME}/.claude/projects:ro
+    # Résumé IA de fin de quête (désactivé par défaut) : voir .env.example.
+    # Le fichier .env est facultatif et n'est pas versionné.
+    env_file:
+      - path: .env
+        required: false
+    restart: "no"
