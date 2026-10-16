@@ -37,11 +37,13 @@ Raccourcis : molette pour zoomer, glisser pour déplacer la carte, double-clic p
 Prérequis : Docker (avec compose 2.24 ou plus), `jq`, `curl`.
 
 ```bash
-cd ~/outils    # le chemin du dossier est inscrit dans les hooks
+cd ~/Projets/claude-dungeon    # le chemin du dossier est inscrit dans les hooks
 ./install.sh
 ```
 
 Puis **redémarre Claude Code** (les hooks sont lus au démarrage).
+
+Pour déplacer le dossier plus tard : `./uninstall.sh` depuis l'ancien emplacement, déplacement, puis `./install.sh` et `dungeon` depuis le nouveau. Un simple `mv` laisse les hooks pointer vers l'ancien chemin.
 
 `install.sh` :
 - ajoute 10 hooks dans `~/.claude/settings.json` (SessionStart, SessionEnd, UserPromptSubmit, PreToolUse, PostToolUse, PostToolUseFailure, PermissionRequest, Notification, Stop, SubagentStop), en gardant tes réglages et en faisant une sauvegarde `settings.json.bak-dungeon-…` ;
