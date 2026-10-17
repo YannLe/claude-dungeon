@@ -16,6 +16,7 @@ Vue web qui suit en direct les sessions Claude Code : hooks → `hooks/emit.sh` 
 - `PostToolUse` de l'outil `Agent` : `tool_response = { isAsync: true, status: "async_launched", agentId, description, … }` pour un agent lancé en arrière-plan. Ce `PostToolUse` arrive tout de suite, ce n'est **pas** la fin de la mission.
 - Le retour d'un sous-agent arrive comme un **`UserPromptSubmit`** dont le prompt commence par `<agent-message from="<agentId>">` + `[Subagent hand-back] …`. Ce n'est pas une demande de l'utilisateur.
 - D'autres prompts techniques passent par `UserPromptSubmit` : `<task-notification>`, `<command-name>` (slash command), `<local-command-caveat>`, `<bash-input>`, et le texte collé entouré de `<pasted_content …>`.
+- `SessionEnd` n'est pas garanti : une session dont le processus a disparu peut ne jamais l'envoyer (constaté le 2026-10-16, cause exacte non prouvée). Un `claude daemon run --origin transient` lancé par la session peut lui survivre et émettre encore (`SubagentStop`). D'où le bouton ✕ / `POST /forget`.
 - Beaucoup de `SubagentStop` viennent d'agents internes qui n'ont fait aucune action : les ignorer si l'agent est inconnu.
 - `TaskCreate` : `tool_response = { task: { id: "1", subject } }`. `TaskUpdate` : `{ success, taskId, updatedFields, statusChange: { from, to } }` — sans le sujet. `TodoWrite` : `tool_input.todos = [{ content, activeForm, status }]` (liste complète, ids positionnels).
 - `Write` / `Edit` : `tool_response.type` vaut `"create"` ou `"update"`.
@@ -27,6 +28,7 @@ Vue web qui suit en direct les sessions Claude Code : hooks → `hooks/emit.sh` 
 - **Disposition qui change pendant un déplacement** (`app.js`) : une nouvelle salle recalcule le plan ; toute salle mémorisée par un acteur doit être re-résolue par sa clé dans le plan courant (`route`, arrivée d'un pas), sinon le trajet part d'un objet périmé et la boucle de dessin plante.
 - **`require('./server/server.js')` dans un test** : le minuteur de lecture des transcripts est `unref()`, sinon Node ne rend jamais la main.
 - **Commandes entre guillemets** (`ddev exec '…'`, `bash -c '…'`) : à re-analyser comme une commande ; les corps de heredoc ne sont pas des commandes (sinon un `phpunit` dans un fichier écrit passe pour un test).
+- Arrêter le serveur de test par son pid ou son port, jamais avec `pkill -f "node server/server.js"` : le motif vise aussi le serveur du conteneur.
 - Après un `dungeon restart`, les objectifs créés avant le redémarrage reviennent en « Tâche #n » au premier `TaskUpdate` (le serveur ne garde rien sur disque).
 
 ## Vérifier un changement

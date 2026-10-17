@@ -101,12 +101,19 @@
     ui.dirty = true;
   }
 
+  function onForget({ id }) {
+    if (!sessions.delete(id)) return;
+    if (view.id === id) setView('realm');
+    ui.dirty = true;
+  }
+
   function connect() {
     const es = new EventSource('/stream');
     es.addEventListener('open', () => $('live').classList.add('on'));
     es.addEventListener('error', () => $('live').classList.remove('on'));
     es.addEventListener('snapshot', (e) => onSnapshot(JSON.parse(e.data)));
     es.addEventListener('event', (e) => onEvent(JSON.parse(e.data)));
+    es.addEventListener('forget', (e) => onForget(JSON.parse(e.data)));
   }
 
   // ================== vues ==================
@@ -793,6 +800,9 @@
         const allies = M.activeCompanions(S).length;
         if (allies) top.append(el('span', null, `🧝 ${allies}`));
         top.append(el('span', 'ago', S.lastAt ? ago(S.lastAt, now) : ''));
+        const forget = el('span', 'forget', '✕');
+        forget.title = 'Oublier ce héros (session fermée sans que le donjon le sache)';
+        top.append(forget);
         row.appendChild(top);
         row.appendChild(el('div', 'q', S.quest ? `📜 ${S.quest}` : '📜 aucune quête'));
         if (S.waiting) row.appendChild(el('div', 'n', `${S.waiting.kind === 'permission' ? '✋' : '⏳'} ${S.waiting.text}`));
@@ -815,7 +825,9 @@
   }
   $('realm').addEventListener('click', (e) => {
     const row = e.target.closest('.hero-row');
-    if (row) setView('dungeon', row.dataset.id);
+    if (!row) return;
+    if (e.target.closest('.forget')) fetch(`/forget?id=${encodeURIComponent(row.dataset.id)}`, { method: 'POST' }).catch(() => {});
+    else setView('dungeon', row.dataset.id);
   });
   const pl = (n, one, many) => `${n} ${n > 1 ? many : one}`;
 

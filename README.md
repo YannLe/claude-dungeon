@@ -63,6 +63,8 @@ dungeon logs
 dungeon reset    # vide les sessions en mémoire
 ```
 
+Une session fermée brutalement (terminal fermé, Ctrl+C répétés) n'envoie pas toujours `SessionEnd` et reste affichée. Le ✕ qui apparaît au survol d'un héros, dans le Royaume, l'oublie. Elle revient si elle émet de nouveau.
+
 Tu peux aussi taper `/dungeon` (ou `/dungeon off`) directement dans Claude Code. Ça coûte quelques tokens, contrairement à l'alias.
 
 Quand le conteneur est éteint, les hooks détectent que le port est fermé et sortent tout de suite : environ 5 ms par action, rien de perceptible.

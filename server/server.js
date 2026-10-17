@@ -376,7 +376,7 @@ async function summarize(s) {
     if (!res.ok || !data) { console.error(`[résumé IA] HTTP ${res.status}`, data && data.error && data.error.message); return; }
     if (data.stop_reason === 'refusal') { console.error('[résumé IA] refusé par le modèle'); return; }
     const text = (data.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('\n').trim();
-    if (text) pushEvent(s, { id: ++seq, t: Date.now(), session: s.id, hook: 'Chronicle', kind: 'chronicle', detail: trunc(text, 800) });
+    if (text && sessions.get(s.id) === s) pushEvent(s, { id: ++seq, t: Date.now(), session: s.id, hook: 'Chronicle', kind: 'chronicle', detail: trunc(text, 800) });
   } catch (err) {
     console.error('[résumé IA]', err.name === 'AbortError' ? 'délai dépassé' : err.message);
   } finally {
@@ -441,6 +441,15 @@ const server = http.createServer((req, res) => {
   if (url.pathname === '/health') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ ok: true, sessions: sessions.size, clients: clients.size, aiSummary: AI_SUMMARY }));
+    return;
+  }
+
+  // Oublie une session que le donjon croit vivante (fermée sans SessionEnd)
+  if (req.method === 'POST' && url.pathname === '/forget') {
+    const id = url.searchParams.get('id');
+    if (!id || !sessions.delete(id)) { res.writeHead(404).end(); return; }
+    broadcast('forget', { id });
+    res.writeHead(204).end();
     return;
   }
 
