@@ -509,9 +509,9 @@
 
   // ================== dessin ==================
   const COL = {
-    floor: '#121019', wall: '#2a2638', corridor: '#191621', corridorEdge: '#2f2a3e',
-    seen: '#25213a', seenEdge: '#5b5486', edited: '#3a2c14', editedEdge: '#e7b84b', created: '#163021', createdEdge: '#6fd896',
-    label: '#cfc6b3', zoneLabel: '#8f86a3', hero: '#f0a24a', cape: '#b5532a', ally: '#5cc8c2',
+    floor: '#221f31', wall: '#6a6290', corridor: '#2a2636', corridorEdge: '#5a5378',
+    seen: '#302b4c', seenEdge: '#8a80c8', edited: '#3a2c14', editedEdge: '#e7b84b', created: '#163021', createdEdge: '#6fd896',
+    label: '#e8e1cf', zoneLabel: '#b3aac8', hero: '#f0a24a', cape: '#b5532a', ally: '#5cc8c2',
   };
   const HERO = ['..CCCC..', '.CCCCCC.', '.CFFFFC.', '.CFEFEC.', '..FFFF..', '.KKBBKK.', 'KKBBBBKK', '.KBBBBK.', '..BB.BB.', '..DD.DD.'];
   const HERO_PAL = { C: COL.hero, F: '#f3d2b0', E: '#1a1020', K: COL.cape, B: '#5a3a7a', D: '#2a1d14' };
@@ -542,7 +542,7 @@
 
   function drawRoomShell(x, y, w, h, wall, label, labelColor, now, scan) {
     ctx.fillStyle = COL.floor; ctx.fillRect(x, y, w, h);
-    ctx.strokeStyle = 'rgba(255,255,255,0.025)'; ctx.lineWidth = 1; ctx.beginPath();
+    ctx.strokeStyle = 'rgba(255,255,255,0.04)'; ctx.lineWidth = 1; ctx.beginPath();
     for (let gx = x; gx <= x + w; gx += 16) { ctx.moveTo(gx, y); ctx.lineTo(gx, y + h); }
     for (let gy = y; gy <= y + h; gy += 16) { ctx.moveTo(x, gy); ctx.lineTo(x + w, gy); }
     ctx.stroke();
@@ -563,7 +563,7 @@
 
   function drawRoom(a, r, now) {
     const isRoot = r.key === '.';
-    drawRoomShell(r.x, r.y, r.w, r.h, isRoot ? '#3a3450' : r.key.startsWith('↗') ? '#2a3238' : COL.wall, isRoot ? `⛩ ${r.label}` : r.label, isRoot ? COL.label : r.key.startsWith('↗') ? '#7fa3a8' : COL.zoneLabel, now, r.scan);
+    drawRoomShell(r.x, r.y, r.w, r.h, isRoot ? '#8a80b8' : r.key.startsWith('↗') ? '#5a7880' : COL.wall, isRoot ? `⛩ ${r.label}` : r.label, isRoot ? COL.label : r.key.startsWith('↗') ? '#9fc3c8' : COL.zoneLabel, now, r.scan);
     for (let i = 0; i < r.n; i++) {
       const f = r.files[i], t = a.L.tileOf.get(f.key);
       const fill = COL[f.state], edge = COL[f.state + 'Edge'];
@@ -596,7 +596,7 @@
     const an = a.L.antre;
     if (!an) return;
     drawCorridor([{ x: an.x + an.w, y: doorY(an) }, { x: a.L.root.x, y: doorY(a.L.root) }]);
-    drawRoomShell(an.x, an.y, an.w, an.h, '#4a2630', '👹 Antre des objectifs', '#d9a0a0', now, -1e9);
+    drawRoomShell(an.x, an.y, an.w, an.h, '#9a4b58', '👹 Antre des objectifs', '#d9a0a0', now, -1e9);
   }
 
   function drawMonsters(a, now, dt) {
@@ -728,7 +728,7 @@
     const h = a.actors.get('hero');
     const hx = W / 2 + (h.x - cam.x) * cam.s, hy = H / 2 + (h.y - cam.y) * cam.s;
     const g = ctx.createRadialGradient(hx, hy, 60 * cam.s, hx, hy, Math.max(W, H) * 0.75);
-    g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,0.5)');
+    g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,0.3)');
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
   }
 
